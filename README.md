@@ -7,12 +7,6 @@
 ![Android](https://img.shields.io/badge/android-7.0%2B-3ddc84)
 ![License](https://img.shields.io/badge/license-MIT-7a55ff)
 
-<p align="center">
-  <img src="screenshots/v-home.png" width="260" alt="Главный экран">
-  <img src="screenshots/v-sound.png" width="260" alt="Эквалайзер">
-  <img src="screenshots/v-fav9.png" width="260" alt="Избранное и очередь">
-</p>
-
 ---
 
 ## Что это
@@ -90,8 +84,7 @@ AliceStation/
 │  ├─ bridge/config.json   конфиг Quasar Bridge
 │  └─ singbox-config.example.json
 ├─ android/                исходники и APK (сборка без Gradle)
-├─ tools/                  ssh-хелперы для станции и LXC
-└─ screenshots/
+└─ tools/                  ssh-хелперы для станции и LXC
 ```
 
 > Бинарники Quasar Bridge и `ytm-alice` **не входят** в репозиторий — они ставятся отдельно (см. ниже).
