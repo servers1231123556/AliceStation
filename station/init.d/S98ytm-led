@@ -1,0 +1,8 @@
+#!/bin/sh
+# ytm-alice LED animation
+[ "$1" = "start" ] || exit 0
+[ -x /data/ytm-led.sh ] || exit 0
+if [ -f /tmp/ytm-led.pid ] && [ -d "/proc/$(cat /tmp/ytm-led.pid)" ]; then exit 0; fi
+nohup sh /data/ytm-led.sh >/dev/null 2>&1 &
+echo $! > /tmp/ytm-led.pid
+exit 0

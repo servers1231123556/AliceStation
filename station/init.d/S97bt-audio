@@ -1,0 +1,26 @@
+#!/bin/sh
+# Choose the audio output: Bluetooth amp when connected, internal speaker otherwise.
+[ "$1" = "start" ] || exit 0
+MAC=87:00:A9:BC:26:2A
+(
+  sleep 12
+  i=0
+  while [ "$i" -lt 10 ]; do
+    conn=$(DBUS_SYSTEM_BUS_ADDRESS=unix:path=/tmp/btbus/socket bluetoothctl info "$MAC" 2>/dev/null | sed -n 's/.*Connected: \(yes\|no\).*/\1/p' | head -1)
+    [ "$conn" = "yes" ] && break
+    DBUS_SYSTEM_BUS_ADDRESS=unix:path=/tmp/btbus/socket bluetoothctl connect "$MAC" >/dev/null 2>&1
+    i=$((i+1))
+    sleep 3
+  done
+  mount -o remount,rw / 2>/dev/null
+  if [ "$conn" = "yes" ] && [ -s /etc/asound.bt ]; then
+    cp /etc/asound.bt /etc/asound.conf
+    echo "bt audio" > /tmp/audio-out
+  else
+    [ -s /etc/asound.internal ] && cp /etc/asound.internal /etc/asound.conf
+    echo "internal audio" > /tmp/audio-out
+  fi
+  sync
+  mount -o remount,ro / 2>/dev/null
+) &
+exit 0

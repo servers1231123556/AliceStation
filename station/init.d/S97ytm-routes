@@ -1,0 +1,5 @@
+#!/bin/sh
+# YouTube routes via VPN (ytm-alice): watchdog re-applies after wlan0 re-association
+[ "$1" = "start" ] || exit 0
+[ -x /data/ytm-routes-watch.sh ] && nohup sh /data/ytm-routes-watch.sh >/dev/null 2>&1 &
+exit 0

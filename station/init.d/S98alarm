@@ -1,0 +1,9 @@
+#!/bin/sh
+[ "$1" = "start" ] || exit 0
+[ -x /data/alarm-daemon.sh ] || exit 0
+if [ -f /tmp/alarm.pid ] && [ -d "/proc/$(cat /tmp/alarm.pid)" ]; then
+  exit 0
+fi
+nohup sh /data/alarm-daemon.sh >/dev/null 2>&1 &
+echo $! > /tmp/alarm.pid
+exit 0

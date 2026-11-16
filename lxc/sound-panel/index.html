@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0f0f14">
+<title>Алиса Дом</title>
+<style>
+  :root{
+    --bg:#0f0f14; --bg2:#15151c; --card:#1c1c24; --card2:#22222c;
+    --line:#2a2a35; --text:#f2f2f7; --muted:#8b8b99; --accent:#7a55ff; --accent2:#a78bfa;
+    --good:#3ddc97; --bad:#ff6b6b;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--bg); color:var(--text);
+    font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    padding-bottom:130px; overflow-x:hidden;
+  }
+  .screen{display:none;padding:18px 16px 8px}
+  .screen.on{display:block}
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin:6px 2px 16px}
+  .title{font-size:26px;font-weight:750;letter-spacing:-.4px;display:flex;align-items:center;gap:8px}
+  .title .chev{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:7px solid var(--text);opacity:.8;margin-top:6px}
+  .iconbtn{width:40px;height:40px;border-radius:50%;background:var(--card);border:0;color:var(--text);
+    font-size:18px;display:flex;align-items:center;justify-content:center}
+  .card{background:var(--card);border-radius:24px;padding:18px;margin-bottom:14px}
+  .card.soft{background:linear-gradient(180deg,var(--card2),var(--card))}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .name{font-weight:650;font-size:16px}
+  .hint{color:var(--muted);font-size:12.5px}
+  .hero{position:relative;border-radius:26px;padding:18px;margin-bottom:16px;overflow:hidden;
+    background:radial-gradient(120% 120% at 20% 0%,#3a2a7a 0%,#1c1a2e 55%,#15151c 100%)}
+  .hero:after{content:"";position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;
+    background:radial-gradient(circle,rgba(122,85,255,.55),transparent 70%)}
+  .station{width:74px;height:58px;border-radius:16px;background:#f2f2f7;position:relative;flex:0 0 auto;
+    box-shadow:0 10px 24px rgba(0,0,0,.45)}
+  .station:before{content:"";position:absolute;left:50%;top:10px;transform:translateX(-50%);
+    width:26px;height:26px;border-radius:50%;background:#dcdce6}
+  .station:after{content:"";position:absolute;left:50%;top:22px;transform:translateX(-50%);
+    width:10px;height:10px;border-radius:50%;background:var(--accent)}
+  .hero .body{position:relative;z-index:1}
+  .chips{display:flex;gap:8px;margin:14px 0 4px;overflow-x:auto;padding-bottom:2px}
+  .chip{flex:0 0 auto;background:#232330;border-radius:16px;padding:9px 14px;font-size:13px;color:var(--text);
+    border:1px solid transparent;display:flex;align-items:center;gap:8px}
+  .chip.primary{background:linear-gradient(135deg,#6a4cff,#a78bfa);font-weight:600}
+  .playbtn{width:52px;height:52px;border-radius:50%;border:0;font-size:20px;color:#fff;
+    background:linear-gradient(135deg,#6a4cff,#a78bfa);box-shadow:0 8px 20px rgba(122,85,255,.35)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .tile{background:var(--card2);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:6px;
+    border:1px solid var(--line)}
+  .tile .big{font-size:20px;font-weight:700}
+  .switch{position:relative;width:50px;height:30px;flex:0 0 auto}
+  .switch input{opacity:0;width:0;height:0;position:absolute}
+  .sl{position:absolute;inset:0;background:#33333f;border-radius:999px;transition:.2s}
+  .sl:before{content:"";position:absolute;width:24px;height:24px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+  .switch input:checked+.sl{background:var(--accent)}
+  .switch input:checked+.sl:before{transform:translateX(20px)}
+  .progress{height:6px;border-radius:999px;background:#2b2b37;overflow:hidden;margin-top:12px}
+  .progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .2s}
+  .nav{position:fixed;left:0;right:0;bottom:0;height:78px;background:rgba(15,15,20,.96);
+    backdrop-filter:blur(12px);border-top:1px solid #1f1f28;display:flex;align-items:center;justify-content:space-around;
+    padding-bottom:env(safe-area-inset-bottom)}
+  .nav button{background:0;border:0;color:var(--muted);font-size:11px;display:flex;flex-direction:column;
+    align-items:center;gap:4px;padding:6px 2px;width:20%}
+  .nav button.on{color:#fff}
+  .nav .ico{font-size:20px;line-height:1}
+  .nav .orb{flex:0 0 64px;width:64px;height:64px;border-radius:50%;border:0;margin-top:-28px;padding:0;font-weight:800;
+    background:linear-gradient(135deg,#6a4cff,#a78bfa);color:#fff;font-size:24px;
+    box-shadow:0 10px 26px rgba(122,85,255,.45)}
+  .eqbars{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:12px 0 16px;align-items:end;height:200px}
+  .band{display:flex;flex-direction:column;align-items:center;gap:6px;height:100%}
+  .band input{writing-mode:vertical-lr;direction:rtl;-webkit-appearance:none;width:30px;flex:1;background:transparent;margin:0}
+  .band input::-webkit-slider-runnable-track{width:6px;background:#33333f;border-radius:999px}
+  .band input::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--accent);margin-left:-8px}
+  .band .f{font-size:11px;color:var(--muted)}
+  .band .g{font-size:11px;color:var(--muted)}
+  svg.curve{width:100%;height:70px;display:block;margin-top:8px}
+  .btn{width:100%;padding:14px;border:0;border-radius:16px;font-size:15px;font-weight:650;color:#fff;
+    background:linear-gradient(135deg,#6a4cff,#8f6bff)}
+  .btn.ghost{background:#232330;color:var(--text)}
+  .dev{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+  .dev:first-child{border-top:0}
+  .tiny{background:#262633;border:0;color:#fff;border-radius:12px;padding:9px 13px;font-size:13px}
+  .status{color:var(--muted);font-size:12.5px;min-height:16px;margin-top:8px}
+  .status.err{color:var(--bad)}
+  .ctrl3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+  .ctrl3 button{background:#262633;border:0;color:#fff;border-radius:14px;padding:12px 0;font-size:16px}
+  .seg{display:flex;background:#232330;border-radius:14px;padding:4px;gap:4px}
+  .seg button{flex:1;border:0;background:0;color:var(--muted);padding:9px 0;border-radius:11px;font-size:13px}
+  .seg button.on{background:var(--accent);color:#fff;font-weight:600}
+</style>
+</head>
+<body>
+
+<!-- ДОМ -->
+<section class="screen on" id="v-home">
+  <div class="topbar">
+    <div class="title">Мой дом <span class="chev"></span></div>
+    <button class="iconbtn" onclick="location.reload()">⟳</button>
+  </div>
+
+  <div class="hero">
+    <div class="body">
+      <div class="row">
+        <div style="display:flex;gap:14px;align-items:center">
+          <div class="station"></div>
+          <div>
+            <div class="name" style="font-size:17px">Станция Мини new</div>
+            <div class="hint" id="heroSub">—</div>
+          </div>
+        </div>
+        <button class="playbtn" id="heroPlay">▶</button>
+      </div>
+      <div class="chips">
+        <div class="chip primary" id="chipTrack">Сейчас играет</div>
+        <div class="chip" id="chipBt">Bluetooth</div>
+        <div class="chip" id="chipOut">Колонка</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="margin-bottom:10px">
+      <div class="name">Зал</div>
+      <div class="hint" id="btCount">—</div>
+    </div>
+    <div id="devList"></div>
+  </div>
+
+  <div class="card">
+    <div class="name" style="margin-bottom:10px">Вывод звука</div>
+    <div class="seg">
+      <button id="outSpk" onclick="setOut('spk')">Колонка</button>
+      <button id="outBt" onclick="setOut('bt')">Усилитель</button>
+    </div>
+    <div class="status" id="homeStatus"></div>
+  </div>
+</section>
+
+<!-- ЗВУК -->
+<section class="screen" id="v-sound">
+  <div class="topbar">
+    <div class="title">Звук</div>
+  </div>
+
+  <div class="card soft">
+    <div class="row">
+      <div>
+        <div class="name">Эквалайзер</div>
+        <div class="hint">5 полос · −12…+12 дБ</div>
+      </div>
+      <label class="switch"><input id="eqsw" type="checkbox"><span class="sl"></span></label>
+    </div>
+    <svg class="curve" id="curve" viewBox="0 0 500 70" preserveAspectRatio="none"></svg>
+    <div class="eqbars" id="eqbars"></div>
+    <div class="grid" style="margin-top:12px" id="presets"></div>
+    <button class="btn" id="applyEq" style="margin-top:12px">Применить кривую</button>
+    <div class="status" id="eqStatus"></div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div>
+        <div class="name">DRC</div>
+        <div class="hint">Выравнивание громкости</div>
+      </div>
+      <label class="switch"><input id="drc" type="checkbox"><span class="sl"></span></label>
+    </div>
+  </div>
+</section>
+
+<!-- МУЗЫКА -->
+<section class="screen" id="v-music">
+  <div class="topbar">
+    <div class="title">Музыка</div>
+  </div>
+
+  <div class="card soft">
+    <div class="name" id="mTitle" style="font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Ничего не играет</div>
+    <div class="hint" id="mArtist"></div>
+    <div class="progress"><i id="mBar"></i></div>
+    <div class="row" style="margin-top:6px">
+      <div class="hint" id="mPos">0:00</div>
+      <div class="hint" id="mDur">0:00</div>
+    </div>
+    <div class="ctrl3">
+      <button onclick="player('previous')">⏮</button>
+      <button onclick="player('toggle')" id="mToggle">▶</button>
+      <button onclick="player('next')">⏭</button>
+    </div>
+    <div class="ctrl3">
+      <button onclick="seek(-30)">−30</button>
+      <button onclick="seek(-10)">−10</button>
+      <button onclick="seek(10)">+10</button>
+    </div>
+    <button class="btn" id="favBtn" style="margin-top:12px">♥ В избранное</button>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div class="name">Избранное</div>
+      <div class="hint" id="fCount">—</div>
+    </div>
+    <div id="fList" style="margin-top:8px"></div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div class="name">Очередь</div>
+      <div class="hint" id="qCount">—</div>
+    </div>
+    <div id="qList" style="margin-top:8px"></div>
+    <button class="btn ghost" id="qMore" style="margin-top:10px;display:none;padding:12px">Показать всю очередь</button>
+  </div>
+</section>
+
+<section class="screen" id="v-more">
+  <div class="topbar">
+    <div class="title">Ещё</div>
+    <button class="iconbtn" onclick="loadSys()">⟳</button>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div>
+        <div class="name">Станция Мини new</div>
+        <div class="hint" id="sysUp">—</div>
+      </div>
+      <div class="hint" id="sysTemp2">—</div>
+    </div>
+    <div class="grid" style="margin-top:14px">
+      <div class="tile"><div class="hint">Процессор</div><div class="big" id="sysCpu">—</div></div>
+      <div class="tile"><div class="hint">Температура</div><div class="big" id="sysTemp">—</div></div>
+      <div class="tile"><div class="hint">Память</div><div class="big" id="sysMem">—</div></div>
+      <div class="tile"><div class="hint">Диск /data</div><div class="big" id="sysDisk">—</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="name" style="margin-bottom:10px">Быстрые команды</div>
+    <div class="grid">
+      <button class="btn ghost" style="padding:14px" onclick="player('toggle')">Пауза / играть</button>
+      <button class="btn ghost" style="padding:14px" onclick="player('next')">Следующий</button>
+      <button class="btn ghost" style="padding:14px" onclick="player('stop')">Стоп</button>
+      <button class="btn ghost" style="padding:14px" onclick="document.querySelector('[data-view=sound]').click()">Эквалайзер</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="name" style="margin-bottom:10px">Разделы</div>
+    <div class="dev" onclick="showView('about')" style="cursor:pointer">
+      <div><div style="font-size:15px">Что умеет станция</div><div class="hint">Команды и возможности</div></div>
+      <div class="hint">›</div>
+    </div>
+    <div class="dev" onclick="showView('timers')" style="cursor:pointer">
+      <div><div style="font-size:15px">Будильники и таймеры</div><div class="hint">Голосом и локальный таймер</div></div>
+      <div class="hint">›</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="name">О приложении</div>
+    <div class="hint" style="margin-top:6px">
+      Алиса Дом 1.0 · панель v1.3 · локальное управление станцией.<br>
+      Панель: http://192.168.0.91:8099
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="v-about">
+  <div class="topbar">
+    <div class="title">Что умеет</div>
+    <button class="iconbtn" onclick="showView('more')">‹</button>
+  </div>
+
+  <div class="card">
+    <div class="name">Музыка</div>
+    <div class="hint" style="margin-top:8px;line-height:1.7">
+      «Алиса, включи Мияги» · «поставь песню Numb»<br>
+      «плей» — подборка · «продолжи» — с паузы<br>
+      «дальше», «назад», «стоп», «что играет»<br>
+      Эквалайзер и кривые — в разделе «Звук»
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="name">Звук и устройства</div>
+    <div class="hint" style="margin-top:8px;line-height:1.7">
+      «переключи на колонку» · «переключи на блютуз»<br>
+      «включи блютуз» — вывод на усилитель<br>
+      Сопряжение новых устройств — в разделе «Мой дом»
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="name">Вопросы</div>
+    <div class="hint" style="margin-top:8px;line-height:1.7">
+      «какая погода» · «который час» · «какое сегодня число»<br>
+      «почему небо голубое» — отвечает локальная модель<br>
+      «кто ты» — расскажет, что она Qwen
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="name">Таймеры и будильники</div>
+    <div class="hint" style="margin-top:8px;line-height:1.7">
+      «поставь будильник на 7 утра»<br>
+      «таймер на 10 минут» · «отмени таймер»<br>
+      Работают через Алису, отдельный раздел — «Будильники и таймеры»
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="hint">Чего нет и не будет: звонки, режим охраны, подписка, сценарии — это облачные функции приложения Яндекса, локального доступа к ним нет.</div>
+  </div>
+</section>
+
+<section class="screen" id="v-timers">
+  <div class="topbar">
+    <div class="title">Таймеры</div>
+    <button class="iconbtn" onclick="showView('more')">‹</button>
+  </div>
+
+  <div class="card">
+    <div class="name">Локальный таймер</div>
+    <div class="hint" style="margin-top:4px">Работает, пока приложение открыто</div>
+    <div class="row" style="margin-top:14px">
+      <input id="tmMin" type="number" min="1" max="180" value="10"
+             style="flex:1;background:#232330;border:0;border-radius:14px;color:#fff;padding:14px;font-size:16px">
+      <span class="hint">минут</span>
+    </div>
+    <div class="grid" style="margin-top:12px">
+      <button class="btn" onclick="startTimer()">Запустить</button>
+      <button class="btn ghost" onclick="stopTimer()">Стоп</button>
+    </div>
+    <div id="tmView" style="font-size:44px;font-weight:800;text-align:center;margin-top:16px;font-variant-numeric:tabular-nums">—:—</div>
+  </div>
+
+  <div class="card">
+    <div class="name">Будильник станции</div>
+    <div class="hint" style="margin-top:4px">Включит музыку в заданное время</div>
+    <div class="row" style="margin-top:12px;gap:8px">
+      <input id="alTime" type="time" value="07:00"
+             style="background:#232330;border:0;border-radius:14px;color:#fff;padding:12px;font-size:16px">
+      <input id="alQuery" type="text" placeholder="что включить"
+             style="flex:1;background:#232330;border:0;border-radius:14px;color:#fff;padding:12px;font-size:15px">
+    </div>
+    <button class="btn" onclick="addAlarm()" style="margin-top:12px">Добавить будильник</button>
+    <div id="alList" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card">
+    <div class="name">Будильники Алисы</div>
+    <div class="hint" style="margin-top:8px;line-height:1.7">
+      Хранятся в облаке Алисы, локально их не прочитать.<br><br>
+      «Алиса, поставь будильник на 7 утра»<br>
+      «Алиса, разбуди через 30 минут»<br>
+      «Алиса, отмени будильник»<br>
+      «Алиса, таймер на 10 минут»
+    </div>
+  </div>
+</section>
+
+<nav class="nav">
+  <button class="on" data-view="home"><span class="ico">⌂</span>Мой дом</button>
+  <button data-view="sound"><span class="ico">⚙</span>Звук</button>
+  <button class="orb" id="orb" aria-label="Алиса"><svg width="26" height="26" viewBox="0 0 24 24"><path d="M12 3.4c.85 0 1.63.45 2.05 1.19l5.1 9.2c.86 1.55-.26 3.49-2.05 3.49H6.9c-1.79 0-2.91-1.94-2.05-3.49l5.1-9.2A2.37 2.37 0 0 1 12 3.4Z" fill="#fff"/></svg></button>
+  <button data-view="music"><span class="ico">♪</span>Музыка</button>
+  <button data-view="more"><span class="ico">☰</span>Ещё</button>
+</nav>
+
+<script>
+const $ = id => document.getElementById(id);
+let state = {sound:{eq:true,drc:true}, player:{status:'stopped',title:'',artists:'',position_ms:0,duration_ms:0},
+             eq:{gains:[0,0,0,0,0],labels:['60','230','910','3.6k','14k'],presets:[],applying:false}, bt:{devices:[],output:'spk'}};
+let gains=[0,0,0,0,0], built=false, busy=false, qExpanded=false;
+
+const mmss = ms => { ms=Math.max(0,ms|0); return (ms/60000|0)+':'+String((ms/1000|0)%60).padStart(2,'0'); };
+const pct = (v,m) => Math.round(v*100/m);
+
+/* views */
+function fmtMin(m){ return String(Math.floor(m/60)).padStart(2,'0') + ':' + String(m%60).padStart(2,'0'); }
+
+async function loadAlarms(){
+  try{
+    const d = await (await fetch('/api/alarms',{cache:'no-store'})).json();
+    const box = $('alList'); box.innerHTML = '';
+    if (!(d.alarms||[]).length) { box.innerHTML = '<div class="hint">Будильников нет</div>'; return; }
+    d.alarms.forEach((a,i) => {
+      const row = document.createElement('div'); row.className = 'dev';
+      row.innerHTML = '<div><div style="font-size:15px">' + fmtMin(a.minutes) + '</div>' +
+                      '<div class="hint">' + (a.query || 'подборка') + '</div></div>';
+      const b = document.createElement('button'); b.className = 'tiny'; b.textContent = 'Удалить';
+      b.onclick = async () => {
+        b.disabled = true;
+        await fetch('/api/alarms',{method:'POST',headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({action:'remove', index:i})});
+        await loadAlarms();
+      };
+      row.appendChild(b); box.appendChild(row);
+    });
+  }catch(e){}
+}
+
+async function addAlarm(){
+  const val = $('alTime').value || '07:00';
+  const parts = val.split(':').map(Number);
+  await fetch('/api/alarms',{method:'POST',headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      action:'add',
+      minutes: parts[0]*60 + parts[1],
+      offset: -new Date().getTimezoneOffset(),
+      query: $('alQuery').value.trim(),
+    })});
+  $('alQuery').value = '';
+  await loadAlarms();
+}
+
+async function loadQueue(){
+  try{
+    const d = await (await fetch('/api/queue',{cache:'no-store'})).json();
+    const box = $('qList'); box.innerHTML = '';
+    const items = d.queue || [];
+    $('qCount').textContent = items.length ? (d.index + 1) + ' / ' + items.length : 'пусто';
+    const shown = qExpanded ? items : items.slice(0, 5);
+    const qb = $('qMore');
+    if (qb) {
+      qb.style.display = (items.length > 5 && !qExpanded) ? 'block' : 'none';
+      qb.textContent = 'Показать всю очередь (' + items.length + ')';
+    }
+    shown.forEach((t,i) => {
+      const row = document.createElement('div');
+      row.className = 'dev';
+      row.style.cursor = 'pointer';
+      const mark = i === d.index ? '▶ ' : '';
+      row.innerHTML = '<div><div style="font-size:14px">' + mark + (t.title || '') + '</div>' +
+                      '<div class="hint">' + (t.artists || '') + '</div></div>';
+      row.onclick = async () => { await post('/api/queue',{number:i+1}); await load(); await loadQueue(); };
+      box.appendChild(row);
+    });
+    if (!items.length) box.innerHTML = '<div class="hint">Очередь пуста</div>';
+  }catch(e){}
+}
+
+async function loadFavs(){
+  try{
+    const d = await (await fetch('/api/favorites',{cache:'no-store'})).json();
+    const box = $('fList'); box.innerHTML = '';
+    const items = d.favorites || [];
+    $('fCount').textContent = items.length ? items.length + ' шт.' : 'пусто';
+    items.forEach((f,i) => {
+      const row = document.createElement('div'); row.className = 'dev';
+      const left = document.createElement('div');
+      left.style.cursor = 'pointer';
+      left.innerHTML = '<div style="font-size:14px">' + (f.title || '') + '</div>' +
+                       '<div class="hint">' + (f.artists || '') + '</div>';
+      left.onclick = async () => { await post('/api/favorites',{action:'play', index:i}); await load(); };
+      const b = document.createElement('button'); b.className = 'tiny'; b.textContent = '✕';
+      b.onclick = async () => { await post('/api/favorites',{action:'remove', id:f.id}); await loadFavs(); };
+      row.appendChild(left); row.appendChild(b); box.appendChild(row);
+    });
+    if (!items.length) box.innerHTML = '<div class="hint">Скажи «добавь в избранное»</div>';
+  }catch(e){}
+}
+
+async function addCurrentFav(){
+  const b = $('favBtn'); b.disabled = true;
+  try { await post('/api/favorites',{action:'add_current'}); await loadFavs(); b.textContent = '♥ Добавлено'; }
+  catch(e) { b.textContent = '♥ В избранное'; }
+  finally { b.disabled = false; setTimeout(() => { b.textContent = '♥ В избранное'; }, 2000); }
+}
+
+function showView(v){
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === 'v-'+v));
+  document.querySelectorAll('.nav [data-view]').forEach(x => x.classList.toggle('on', x.dataset.view === v));
+  if (v === 'more') loadSys();
+  if (v === 'timers') loadAlarms();
+  if (v === 'music') { loadQueue(); loadFavs(); }
+}
+
+document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => showView(b.dataset.view));
+$('orb').onclick = () => showView('music');
+
+/* local timer */
+let tmId = null, tmLeft = 0;
+function fmt(s){ const m=Math.floor(s/60), r=s%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0'); }
+function startTimer(){
+  const m = Math.max(1, Math.min(180, parseInt($('tmMin').value || '10', 10)));
+  stopTimer();
+  tmLeft = m * 60;
+  $('tmView').textContent = fmt(tmLeft);
+  tmId = setInterval(() => {
+    tmLeft--;
+    $('tmView').textContent = fmt(Math.max(0, tmLeft));
+    if (tmLeft <= 0) { ring(); stopTimer(); }
+  }, 1000);
+}
+function stopTimer(){ if (tmId) { clearInterval(tmId); tmId = null; } }
+function ring(){
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = 880;
+    o.connect(g); g.connect(ctx.destination);
+    g.gain.setValueAtTime(0.001, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + 0.05);
+    o.start();
+    setTimeout(() => { o.stop(); ctx.close(); }, 1200);
+  } catch(e) {}
+  if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
+  $('tmView').textContent = 'ВРЕМЯ';
+}
+
+/* render */
+function renderSound(){
+  const s = state.sound;
+  $('eqsw').checked = !!s.eq;
+  $('drc').checked = !!s.drc;
+}
+function renderEq(){
+  const e = state.eq;
+  if (!built && e.labels) {
+    built = true;
+    const bars = $('eqbars');
+    e.labels.forEach((lab,i) => {
+      const d = document.createElement('div');
+      d.className = 'band';
+      d.innerHTML = `<div class="g" id="g${i}">0</div>
+        <input type="range" min="-12" max="12" step="1" value="0" id="s${i}">
+        <div class="f">${lab}</div>`;
+      bars.appendChild(d);
+    });
+    e.labels.forEach((_,i) => { $('s'+i).oninput = ev => { gains[i]=+ev.target.value; $('g'+i).textContent=gains[i]; drawCurve(); }; });
+    const pr = $('presets'); pr.innerHTML='';
+    (e.presets||[]).forEach(p => {
+      const b = document.createElement('button');
+      b.className='btn ghost'; b.style.padding='12px'; b.textContent=p.label;
+      b.onclick = () => { setGains(p.gains); };
+      pr.appendChild(b);
+    });
+  }
+  if (!busy && !e.applying) setGains(e.gains);
+  $('applyEq').disabled = !!e.applying;
+  $('applyEq').textContent = e.applying ? 'Применяю… (~15 с)' : 'Применить кривую';
+}
+function setGains(g){
+  gains = g.slice();
+  g.forEach((v,i) => { const s=$('s'+i); if(s){ s.value=v; $('g'+i).textContent=v; } });
+  drawCurve();
+}
+function drawCurve(){
+  const svg=$('curve'), w=500,h=70,n=5;
+  const pts = gains.map((g,i) => [ (i/(n-1))*w, h/2 - (g/12)*(h/2-6) ]);
+  let d = `M 0 ${h/2} L ${pts[0][0]} ${pts[0][1]}`;
+  for (let i=1;i<pts.length;i++) d += ` L ${pts[i][0]} ${pts[i][1]}`;
+  d += ` L ${w} ${h/2}`;
+  svg.innerHTML = `<defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="#7a55ff"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs>
+    <line x1="0" y1="${h/2}" x2="${w}" y2="${h/2}" stroke="#2a2a35"/>
+    <path d="${d}" fill="none" stroke="url(#gg)" stroke-width="3"/>`;
+}
+function renderPlayer(){
+  const p = state.player;
+  const playing = p.status === 'playing' || p.status === 'buffering';
+  $('heroPlay').textContent = playing ? 'II' : '▶';
+  $('mToggle').textContent = playing ? 'II' : '▶';
+  $('heroSub').textContent = p.title ? (p.artists || p.status) : 'Готова слушать';
+  $('chipTrack').textContent = p.title ? p.title.slice(0,22) : 'Сейчас играет';
+  $('mTitle').textContent = p.title || 'Ничего не играет';
+  $('mArtist').textContent = [p.artists, p.status].filter(Boolean).join(' · ');
+  const dur = p.duration_ms||0, pos = Math.min(p.position_ms||0, dur||1e9);
+  $('mBar').style.width = (dur? (pos*100/dur):0)+'%';
+  $('mPos').textContent = mmss(pos); $('mDur').textContent = dur? mmss(dur):'0:00';
+}
+function renderBt(){
+  const b = state.bt || {devices:[],output:'spk'};
+  $('outSpk').classList.toggle('on', b.output==='spk');
+  $('outBt').classList.toggle('on', b.output==='bt');
+  $('chipOut').textContent = b.output==='bt' ? 'Усилитель' : 'Колонка';
+  const conn = b.devices.filter(d=>d.connected).length;
+  $('chipBt').textContent = conn ? 'Bluetooth · подключён' : 'Bluetooth';
+  $('btCount').textContent = b.devices.length ? b.devices.length + ' устр.' : 'нет устройств';
+  const box=$('devList'); box.innerHTML='';
+  if (!b.devices.length) box.innerHTML='<div class="hint">Нажми ⟳ у приложения или добавь устройство в панели</div>';
+  b.devices.forEach(d => {
+    const r=document.createElement('div'); r.className='dev';
+    r.innerHTML = `<div><div style="font-size:15px">${d.name}</div><div class="hint">${d.mac}${d.connected?' · подключено':''}</div></div>`;
+    const btn=document.createElement('button'); btn.className='tiny';
+    btn.textContent = d.connected ? 'Отключить' : (d.paired ? 'Подключить' : 'Сопрячь');
+    btn.onclick = async () => { btn.disabled=true; await btAction(d.connected?'disconnect':'pair', d.mac); btn.disabled=false; };
+    r.appendChild(btn); box.appendChild(r);
+  });
+}
+
+/* api */
+async function load(){
+  try{
+    const r = await fetch('/api/state',{cache:'no-store'});
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+    state.sound=d.sound; state.player=d.player; state.eq=d.eq;
+    renderSound(); renderEq(); renderPlayer();
+  }catch(e){ status('Нет связи со станцией', true); }
+}
+async function loadBt(){
+  try{
+    const d = await (await fetch('/api/bt',{cache:'no-store'})).json();
+    if (!d.error) { state.bt=d; renderBt(); }
+  }catch(e){}
+}
+function status(msg, err){ const el=$('eqStatus'); el.textContent=msg||''; el.className='status'+(err?' err':''); }
+
+async function post(url, body){
+  const r = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  return await r.json();
+}
+async function player(action){ await post('/api/player',{action}); await load(); }
+async function seek(v){ await post('/api/player',{action:'seek',value:v}); await load(); }
+async function setOut(t){ await post('/api/out',{target:t}); await loadBt(); }
+async function btAction(action, mac){
+  status('Работаю с Bluetooth…');
+  await post('/api/bt',{action, mac});
+  await loadBt(); status('');
+}
+$('heroPlay').onclick = () => player('toggle');
+$('favBtn').onclick = addCurrentFav;
+$('qMore').onclick = () => { qExpanded = true; loadQueue(); };
+$('eqsw').onchange = async e => { await post('/api/set',{eq:e.target.checked}); await load(); };
+$('drc').onchange  = async e => { await post('/api/set',{drc:e.target.checked}); await load(); };
+$('applyEq').onclick = async () => {
+  busy = true; $('applyEq').disabled = true; $('applyEq').textContent='Применяю… (~15 с)';
+  try {
+    await post('/api/eq',{gains, enabled:true});
+    for (let i=0;i<40;i++){ await new Promise(r=>setTimeout(r,1500)); const d=await (await fetch('/api/state',{cache:'no-store'})).json(); if(!d.eq.applying){ state.eq=d.eq; break; } }
+    status('Кривая применена');
+  } catch(e){ status('Ошибка: '+e.message, true); }
+  finally { busy=false; $('applyEq').disabled=false; $('applyEq').textContent='Применить кривую'; }
+};
+
+async function loadSys(){
+  try{
+    const d = await (await fetch('/api/sys',{cache:'no-store'})).json();
+    if (d.error) throw new Error(d.error);
+    $('sysCpu').textContent = (d.load || ['0'])[0];
+    $('sysTemp').textContent = d.temp_c ? d.temp_c + '°' : '—';
+    $('sysTemp2').textContent = d.temp_c ? d.temp_c + ' °C' : '';
+    $('sysMem').textContent = d.mem_used_mb + ' / ' + d.mem_total_mb + ' МБ';
+    $('sysDisk').textContent = d.disk_used_mb + ' / ' + d.disk_total_mb + ' МБ';
+    $('sysUp').textContent = 'работает ' + d.uptime_h + ' ч';
+  }catch(e){ $('sysUp').textContent = 'нет связи'; }
+}
+
+drawCurve(); load(); loadBt(); loadSys();
+setInterval(load, 3000); setInterval(loadBt, 10000);
+setInterval(function(){
+  var v = document.getElementById('v-music');
+  if (v && v.classList.contains('on')) { loadQueue(); loadFavs(); }
+}, 5000);
+</script>
+</body>
+</html>

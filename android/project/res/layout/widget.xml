@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_bg"
+    android:padding="14dp">
+
+    <TextView
+        android:id="@+id/widget_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#f2f2f7"
+        android:textSize="15sp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:text="Станция Мини" />
+
+    <TextView
+        android:id="@+id/widget_sub"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#8b8b99"
+        android:textSize="12sp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:text="Ничего не играет" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp">
+
+        <TextView
+            android:id="@+id/widget_prev"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:text="‹‹"
+            android:textColor="#f2f2f7"
+            android:textSize="18sp"
+            android:background="@drawable/widget_btn" />
+
+        <TextView
+            android:id="@+id/widget_toggle"
+            android:layout_width="0dp"
+            android:layout_weight="1.4"
+            android:layout_height="40dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:gravity="center"
+            android:text="▶"
+            android:textColor="#ffffff"
+            android:textSize="18sp"
+            android:background="@drawable/widget_btn_accent" />
+
+        <TextView
+            android:id="@+id/widget_next"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:text="››"
+            android:textColor="#f2f2f7"
+            android:textSize="18sp"
+            android:background="@drawable/widget_btn" />
+    </LinearLayout>
+</LinearLayout>

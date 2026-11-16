@@ -1,0 +1,33 @@
+# секреты и локальные данные
+lxc/singbox-config.json
+lxc/bridge/runtime.env
+*.jks
+*.keystore
+favorites.json
+history.json
+alarms.txt
+state.json
+settings.json
+
+# состояние панели
+lxc/sound-panel/favorites.json
+lxc/sound-panel/history.json
+
+# python
+__pycache__/
+*.pyc
+
+# сборка Android
+android/out/
+*.apk.bak
+build/
+.gradle/
+
+# ОС
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# временное
+tmp/
+*.log
