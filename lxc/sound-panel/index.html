@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ru">
 <head>
 <meta charset="utf-8">
@@ -119,6 +119,14 @@
         <div class="chip" id="chipOut">Колонка</div>
       </div>
     </div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div class="name">Погода</div>
+      <div class="hint" id="wCity">—</div>
+    </div>
+    <div class="chips" id="wHours" style="margin-top:10px"></div>
   </div>
 
   <div class="card">
@@ -472,10 +480,35 @@ async function addCurrentFav(){
   finally { b.disabled = false; setTimeout(() => { b.textContent = '♥ В избранное'; }, 2000); }
 }
 
+async function loadWeather(){
+  try{
+    const d = await (await fetch('/api/weather',{cache:'no-store'})).json();
+    $('wCity').textContent = d.city || '';
+    const box = $('wHours'); box.innerHTML = '';
+    const hours = d.hours || [];
+    if (!hours.length) { box.innerHTML = '<div class="hint">нет данных</div>'; return; }
+    hours.slice(0, 14).forEach(h => {
+      const t = new Date(h.t);
+      const hh = String(t.getHours()).padStart(2,'0') + ':00';
+      const chip = document.createElement('div');
+      chip.className = 'chip';
+      chip.style.flexDirection = 'column';
+      chip.style.alignItems = 'center';
+      chip.style.minWidth = '64px';
+      chip.title = h.desc;
+      chip.innerHTML = '<div class="hint" style="font-size:11px">' + hh + '</div>' +
+        '<div style="font-size:15px;font-weight:600">' + (h.temp > 0 ? '+' : '') + h.temp + '°</div>' +
+        '<div class="hint" style="font-size:10px">' + (h.precip > 0 ? h.precip + ' мм' : '&nbsp;') + '</div>';
+      box.appendChild(chip);
+    });
+  }catch(e){}
+}
+
 function showView(v){
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === 'v-'+v));
   document.querySelectorAll('.nav [data-view]').forEach(x => x.classList.toggle('on', x.dataset.view === v));
   if (v === 'more') loadSys();
+  if (v === 'home') loadWeather();
   if (v === 'timers') loadAlarms();
   if (v === 'music') { loadQueue(); loadFavs(); }
 }
@@ -651,7 +684,8 @@ async function loadSys(){
   }catch(e){ $('sysUp').textContent = 'нет связи'; }
 }
 
-drawCurve(); load(); loadBt(); loadSys();
+drawCurve(); load(); loadBt(); loadSys(); loadWeather();
+setInterval(loadWeather, 600000);
 setInterval(load, 3000); setInterval(loadBt, 10000);
 setInterval(function(){
   var v = document.getElementById('v-music');

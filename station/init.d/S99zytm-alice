@@ -1,0 +1,9 @@
+#!/bin/sh
+# ytm-alice managed boot hook
+export YAM_ROOT='/data/yam'
+export YAM_VAR="$YAM_ROOT/var"
+case "${1:-}" in
+ start) [ -x "$YAM_ROOT/bin/ytm-alice" ] && "$YAM_ROOT/bin/ytm-alice" daemon start ;;
+ stop) [ -x "$YAM_ROOT/bin/ytm-alice" ] && "$YAM_ROOT/bin/ytm-alice" daemon stop ;;
+esac
+exit 0

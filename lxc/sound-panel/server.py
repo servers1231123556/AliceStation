@@ -1,9 +1,10 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Sound panel for the Yandex Station: EQ curve, DRC, player, seek."""
 import json
 import subprocess
 import threading
 import time
+import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -476,6 +477,56 @@ def alarms_action(values):
     return alarms_state()
 
 
+CITY = "Тарко-Сале"
+LAT, LON = "64.9167", "77.7833"
+
+SYMBOLS = {
+    "clearsky": "ясно", "fair": "ясно", "partlycloudy": "переменная облачность",
+    "cloudy": "облачно", "fog": "туман", "lightrain": "небольшой дождь",
+    "rain": "дождь", "heavyrain": "сильный дождь", "lightrainshowers": "небольшой дождь",
+    "rainshowers": "ливень", "heavyrainshowers": "сильный ливень", "lightsleet": "небольшой мокрый снег",
+    "sleet": "мокрый снег", "lightsnow": "небольшой снег", "snow": "снег",
+    "heavysnow": "сильный снег", "lightsnowshowers": "небольшой снегопад",
+    "snowshowers": "снегопад", "thunderstorm": "гроза", "rainandthunder": "дождь с грозой",
+    "snowandthunder": "снег с грозой",
+}
+
+_weather_cache = {"ts": 0.0, "data": None}
+
+
+def weather_hours():
+    if _weather_cache["data"] and time.time() - _weather_cache["ts"] < 600:
+        return _weather_cache["data"]
+    url = ("https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=%s&lon=%s"
+           % (LAT, LON))
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "AliceHome/1.0 (home panel)"})
+        with urllib.request.urlopen(req, timeout=15) as r:
+            raw = json.loads(r.read().decode("utf-8"))
+        series = raw["properties"]["timeseries"]
+    except Exception as e:
+        return {"city": CITY, "error": str(e), "hours": []}
+
+    hours = []
+    for ts in series[:14]:
+        inst = ts.get("data", {}).get("instant", {}).get("details", {})
+        nxt = ts.get("data", {}).get("next_1_hours") or ts.get("data", {}).get("next_6_hours") or {}
+        code = (nxt.get("summary", {}) or {}).get("symbol_code", "")
+        precip = (nxt.get("details", {}) or {}).get("precipitation_amount", 0)
+        hours.append({
+            "t": ts.get("time"),
+            "temp": round(inst.get("air_temperature", 0)),
+            "wind": round(inst.get("wind_speed", 0)),
+            "code": code,
+            "desc": SYMBOLS.get(code.split("_")[0], code or "—"),
+            "precip": round(float(precip or 0), 1),
+        })
+    data = {"city": CITY, "hours": hours}
+    _weather_cache["ts"] = time.time()
+    _weather_cache["data"] = data
+    return data
+
+
 class Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
 
@@ -512,6 +563,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, json.dumps(history_state(), ensure_ascii=False))
             if self.path.startswith("/api/mixseed"):
                 return self._send(200, json.dumps(mix_seed(), ensure_ascii=False))
+            if self.path.startswith("/api/weather"):
+                return self._send(200, json.dumps(weather_hours(), ensure_ascii=False))
             self._send(404, json.dumps({"error": "not found"}))
         except Exception as e:
             self._send(502, json.dumps({"error": str(e)}, ensure_ascii=False))

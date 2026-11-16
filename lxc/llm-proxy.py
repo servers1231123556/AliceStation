@@ -272,12 +272,22 @@ def smart_mix():
     call("/data/yam/bin/ytm-alice recommendations")
     sys.stderr.write("smart_mix: fallback to recommendations\n")
 
+LED_MANUAL = False  # firmware patterns draw our colors; keep manual writes off
+
+
 def led(state):
+    if not LED_MANUAL:
+        return
     import subprocess
     try:
         subprocess.run(SSH_BIN + ["sh /data/led.sh %s" % state], capture_output=True, timeout=10)
     except Exception:
         pass
+
+
+def led_speaking():
+    led("violet")
+    threading.Timer(12.0, led, args=("off",)).start()
 
 
 def led_answer():
@@ -313,6 +323,41 @@ def fetch(url, timeout=20):
     req = urllib.request.Request(url, headers={"User-Agent": UA})
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return r.read()
+
+
+HOURLY_RE = re.compile(
+    r"(по\s+часам|на\s+завтра|на\s+вечер|будет\s+ли\s+(?:дождь|снег)|"
+    r"когда\s+(?:дождь|снег|потеплеет|похолодает)|прогноз)",
+    re.IGNORECASE,
+)
+
+
+def weather_hourly_text():
+    try:
+        raw = json.loads(fetch(
+            "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=%s&lon=%s" % (LAT, LON), 20))
+    except Exception as e:
+        sys.stderr.write("hourly weather failed: %s\n" % e)
+        return None
+    series = (raw.get("properties") or {}).get("timeseries") or []
+    if not series:
+        return None
+    parts = []
+    for ts in series[:8]:
+        t = ts.get("time") or ""
+        hh = t[11:13]
+        inst = (ts.get("data") or {}).get("instant", {}).get("details", {})
+        nxt = (ts.get("data") or {}).get("next_1_hours") or {}
+        code = ((nxt.get("summary") or {}).get("symbol_code") or "").split("_")[0]
+        temp = round(inst.get("air_temperature", 0))
+        desc = SYMBOLS.get(code, "")
+        if desc:
+            parts.append("%s: %+d, %s" % (hh, temp, desc))
+        else:
+            parts.append("%s: %+d" % (hh, temp))
+    if not parts:
+        return None
+    return "По часам: " + "; ".join(parts) + "."
 
 
 def weather_text():
@@ -410,6 +455,7 @@ def rewrite(raw):
         def _like():
             panel_post("/api/favorites", {"action": "add_current"})
             led("violet")
+            threading.Timer(4.0, led, args=("off",)).start()
         threading.Thread(target=_like, daemon=True).start()
         return ("text", "Добавила в избранное")
     if RECOMMEND_RE.match(user_text):
@@ -427,6 +473,10 @@ def rewrite(raw):
         return ("text", "Я Qwen, локальная языковая модель. Работаю на сервере пользователя, без облака.")
 
     if TIME_WEATHER_RE.search(user_text):
+        if HOURLY_RE.search(user_text):
+            hourly = weather_hourly_text()
+            if hourly:
+                return ("text", hourly)
         ctx = context_prefix()
         for m in messages:
             if isinstance(m, dict) and m.get("role") == "system":
@@ -446,6 +496,7 @@ def rewrite(raw):
             led_answer()
             return ("text", _shorten(ans))
         led("off")
+    threading.Thread(target=led, args=("blue",), daemon=True).start()
     return ("forward", json.dumps(data, ensure_ascii=False).encode("utf-8"))
 
 
@@ -638,6 +689,7 @@ class Handler(BaseHTTPRequestHandler):
                 if self.path.startswith("/v1/chat/completions"):
                     payload = clean_response(payload)
                     payload = web_fallback(payload, body)
+                    threading.Thread(target=led_speaking, daemon=True).start()
                 self.send_response(resp.status)
                 self.send_header("Content-Type", resp.headers.get("Content-Type", "application/json"))
                 self.send_header("Content-Length", str(len(payload)))

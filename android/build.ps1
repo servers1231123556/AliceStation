@@ -21,7 +21,7 @@ if ($LASTEXITCODE -ne 0) { throw 'aapt2 link failed' }
 Write-Host '3/7 javac'
 $srcs = @(Get-ChildItem "$proj\src" -Recurse -Filter *.java | ForEach-Object { $_.FullName })
 $srcs += @(Get-ChildItem "$out\gen" -Recurse -Filter *.java -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName })
-& "$env:JAVA_HOME\bin\javac.exe" -source 8 -target 8 -nowarn -bootclasspath $androidJar -classpath $androidJar -d "$out\classes" $srcs
+& "$env:JAVA_HOME\bin\javac.exe" -source 8 -target 8 -nowarn -encoding UTF-8 -classpath $androidJar -d "$out\classes" $srcs
 if ($LASTEXITCODE -ne 0) { throw 'javac failed' }
 
 Write-Host '4/7 d8'
@@ -51,4 +51,6 @@ if ($LASTEXITCODE -ne 0) { throw 'apksigner failed' }
 
 & "$bt\apksigner.bat" verify --print-certs "$out\AliceHome.apk" | Select-Object -First 4
 Write-Host ('OK -> ' + "$out\AliceHome.apk" + '  ' + [math]::Round((Get-Item "$out\AliceHome.apk").Length / 1KB, 1) + ' KB')
+
+
 
